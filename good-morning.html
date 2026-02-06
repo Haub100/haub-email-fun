@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning! Catch the Toddler!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    background: linear-gradient(180deg, #ffecd2 0%, #fcb69f 50%, #ff9a9e 100%);
+    font-family: 'Segoe UI', 'Arial Rounded MT Bold', sans-serif;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" style="font-size:28px"><text y="28">🤗</text></svg>') 16 16, auto;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+  }
+
+  #game-area {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Sunrise background elements */
+  .sun {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #FFD700 0%, #FFA500 60%, transparent 70%);
+    border-radius: 50%;
+    animation: sunrise 3s ease-out forwards;
+    z-index: 0;
+  }
+
+  @keyframes sunrise {
+    from { bottom: -100px; opacity: 0.3; }
+    to { bottom: 60px; opacity: 1; }
+  }
+
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.7;
+    z-index: 1;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  .cloud-1 { top: 60px; left: 10%; width: 120px; height: 40px; animation: float 8s ease-in-out infinite; }
+  .cloud-1::before { width: 50px; height: 50px; top: -25px; left: 20px; }
+  .cloud-1::after { width: 70px; height: 55px; top: -30px; left: 50px; }
+  .cloud-2 { top: 100px; right: 15%; width: 100px; height: 35px; animation: float 10s ease-in-out infinite reverse; }
+  .cloud-2::before { width: 45px; height: 45px; top: -20px; left: 15px; }
+  .cloud-2::after { width: 60px; height: 50px; top: -28px; left: 40px; }
+  .cloud-3 { top: 40px; left: 45%; width: 80px; height: 30px; animation: float 12s ease-in-out infinite; }
+  .cloud-3::before { width: 35px; height: 35px; top: -18px; left: 10px; }
+  .cloud-3::after { width: 50px; height: 40px; top: -22px; left: 30px; }
+
+  @keyframes float {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(30px); }
+  }
+
+  /* Grass floor */
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(180deg, #7ec850 0%, #5a9e3a 100%);
+    z-index: 2;
+    border-top: 4px solid #4a8a2a;
+  }
+
+  /* Header */
+  #header {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+  }
+
+  #header h1 {
+    font-size: 2.5em;
+    color: #ff6b6b;
+    text-shadow: 2px 2px 0 #fff, -1px -1px 0 #fff;
+    animation: bounce-text 2s ease-in-out infinite;
+  }
+
+  #header p {
+    font-size: 1.1em;
+    color: #555;
+    margin-top: 5px;
+    background: rgba(255,255,255,0.7);
+    padding: 5px 15px;
+    border-radius: 20px;
+  }
+
+  @keyframes bounce-text {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* Toddler */
+  #toddler {
+    position: absolute;
+    z-index: 5;
+    font-size: 64px;
+    transition: none;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+    pointer-events: none;
+  }
+
+  #toddler.running-left { transform: scaleX(-1); }
+  #toddler.running-right { transform: scaleX(1); }
+
+  #toddler .wobble {
+    display: inline-block;
+    animation: toddler-wobble 0.3s ease-in-out infinite alternate;
+  }
+
+  @keyframes toddler-wobble {
+    0% { transform: rotate(-8deg) translateY(0); }
+    100% { transform: rotate(8deg) translateY(-4px); }
+  }
+
+  #toddler.caught .wobble {
+    animation: toddler-happy 0.5s ease-in-out infinite;
+  }
+
+  @keyframes toddler-happy {
+    0%, 100% { transform: rotate(0) translateY(0); }
+    25% { transform: rotate(-5deg) translateY(-10px); }
+    75% { transform: rotate(5deg) translateY(-10px); }
+  }
+
+  /* Milk bottle */
+  #milk {
+    position: absolute;
+    z-index: 4;
+    font-size: 56px;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+    pointer-events: none;
+    animation: milk-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes milk-glow {
+    0%, 100% { filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)) drop-shadow(0 0 0px #fff); }
+    50% { filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)) drop-shadow(0 0 15px rgba(255,255,200,0.8)); }
+  }
+
+  /* Speech bubbles */
+  .speech-bubble {
+    position: absolute;
+    background: white;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    z-index: 15;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: opacity 0.3s;
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid white;
+  }
+
+  .speech-bubble.visible {
+    opacity: 1;
+    animation: pop-in 0.3s ease-out;
+  }
+
+  @keyframes pop-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Footprints */
+  .footprint {
+    position: absolute;
+    font-size: 16px;
+    opacity: 0.4;
+    z-index: 3;
+    pointer-events: none;
+    animation: fade-print 2s forwards;
+  }
+
+  @keyframes fade-print {
+    0% { opacity: 0.4; }
+    100% { opacity: 0; }
+  }
+
+  /* Giggle particles */
+  .giggle {
+    position: absolute;
+    font-size: 20px;
+    z-index: 14;
+    pointer-events: none;
+    animation: giggle-float 1.5s ease-out forwards;
+  }
+
+  @keyframes giggle-float {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.5); }
+  }
+
+  /* Win overlay */
+  #win-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.0);
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: background 1s;
+  }
+
+  #win-screen.active {
+    display: flex;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  #win-screen h1 {
+    font-size: 4em;
+    color: #ff6b6b;
+    text-shadow: 3px 3px 0 #ffd93d;
+    animation: win-bounce 0.8s ease-in-out infinite alternate;
+    text-align: center;
+  }
+
+  #win-screen .win-emoji {
+    font-size: 80px;
+    animation: win-spin 2s linear infinite;
+    margin: 20px;
+  }
+
+  #win-screen .win-message {
+    font-size: 1.5em;
+    color: #666;
+    margin-top: 10px;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.5;
+  }
+
+  #win-screen .hearts {
+    font-size: 30px;
+    margin-top: 15px;
+    animation: heart-pulse 1s ease-in-out infinite alternate;
+  }
+
+  #play-again {
+    margin-top: 25px;
+    padding: 12px 30px;
+    font-size: 1.2em;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  #play-again:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255,107,107,0.6);
+  }
+
+  @keyframes win-bounce {
+    0% { transform: translateY(0) rotate(-2deg); }
+    100% { transform: translateY(-15px) rotate(2deg); }
+  }
+
+  @keyframes win-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes heart-pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.2); }
+  }
+
+  /* Confetti */
+  .confetti {
+    position: fixed;
+    z-index: 101;
+    pointer-events: none;
+    font-size: 24px;
+    animation: confetti-fall linear forwards;
+  }
+
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Hint arrow */
+  #hint {
+    position: absolute;
+    z-index: 10;
+    font-size: 28px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  #hint.visible { opacity: 0.7; animation: hint-bounce 1s ease-in-out infinite; }
+  @keyframes hint-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Mobile touch hint */
+  #touch-hint {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 1em;
+    color: #666;
+    background: rgba(255,255,255,0.8);
+    padding: 8px 16px;
+    border-radius: 20px;
+    opacity: 0;
+    animation: fade-in-hint 1s 2s forwards;
+  }
+
+  @keyframes fade-in-hint {
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="game-area">
+  <div class="sun"></div>
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+  <div class="ground"></div>
+
+  <div id="header">
+    <h1>Good Morning! &#x2600;&#xFE0F;</h1>
+    <p>Chase the little one to her milk bottle!</p>
+  </div>
+
+  <div id="toddler"><span class="wobble">&#x1F476;</span></div>
+  <div id="milk">&#x1F37C;</div>
+
+  <div id="hint">&#x1F449;</div>
+  <div id="touch-hint">Move your finger near the baby!</div>
+</div>
+
+<div id="win-screen">
+  <div class="win-emoji">&#x1F37C;</div>
+  <h1>Good Morning!</h1>
+  <div class="win-message">
+    The little one found her milk bottle!<br>
+    Have a beautiful day &#x2600;&#xFE0F;
+  </div>
+  <div class="hearts">&#x2764;&#xFE0F; &#x1F9E1; &#x1F49B; &#x1F49A; &#x1F499; &#x1F49C;</div>
+  <button id="play-again">Play Again &#x1F504;</button>
+</div>
+
+<script>
+(function() {
+  const toddler = document.getElementById('toddler');
+  const milk = document.getElementById('milk');
+  const gameArea = document.getElementById('game-area');
+  const winScreen = document.getElementById('win-screen');
+  const playAgain = document.getElementById('play-again');
+  const hint = document.getElementById('hint');
+  const speechBubble = createSpeechBubble();
+
+  const TODDLER_SIZE = 64;
+  const MILK_SIZE = 56;
+  const FLEE_DISTANCE = 180;
+  const FLEE_SPEED = 4.5;
+  const PADDING = 20;
+  const MILK_CATCH_DIST = 60;
+
+  let toddlerX, toddlerY, milkX, milkY;
+  let mouseX = -999, mouseY = -999;
+  let gameWon = false;
+  let toddlerVx = 0, toddlerVy = 0;
+  let lastGiggle = 0;
+  let lastFootprint = 0;
+  let speechTimeout = null;
+  let isMoving = false;
+  let hintTimer = null;
+
+  const giggles = ['hehe!', 'teehee!', 'catch me!', 'nuh uh!', 'wheee!', 'too slow!', 'la la la!', 'can\'t get me!', 'nyaaah!'];
+
+  function createSpeechBubble() {
+    const el = document.createElement('div');
+    el.className = 'speech-bubble';
+    gameArea.appendChild(el);
+    return el;
+  }
+
+  function init() {
+    gameWon = false;
+    winScreen.classList.remove('active');
+    toddler.classList.remove('caught');
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    toddlerX = w * 0.3 + Math.random() * w * 0.4;
+    toddlerY = h * 0.3 + Math.random() * h * 0.3;
+
+    // Place milk in a corner-ish area, away from toddler
+    const corners = [
+      { x: PADDING + 40, y: PADDING + 120 },
+      { x: w - PADDING - MILK_SIZE - 40, y: PADDING + 120 },
+      { x: PADDING + 40, y: h - PADDING - MILK_SIZE - 120 },
+      { x: w - PADDING - MILK_SIZE - 40, y: h - PADDING - MILK_SIZE - 120 }
+    ];
+
+    // Pick the corner farthest from toddler
+    let bestCorner = corners[0];
+    let bestDist = 0;
+    for (const c of corners) {
+      const d = dist(c.x, c.y, toddlerX, toddlerY);
+      if (d > bestDist) { bestDist = d; bestCorner = c; }
+    }
+    milkX = bestCorner.x;
+    milkY = bestCorner.y;
+
+    toddler.style.left = toddlerX + 'px';
+    toddler.style.top = toddlerY + 'px';
+    milk.style.left = milkX + 'px';
+    milk.style.top = milkY + 'px';
+
+    toddlerVx = 0;
+    toddlerVy = 0;
+    mouseX = -999;
+    mouseY = -999;
+    isMoving = false;
+
+    // Clear old footprints/giggles
+    document.querySelectorAll('.footprint, .giggle, .confetti').forEach(el => el.remove());
+
+    // Show hint after a few seconds
+    hint.classList.remove('visible');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      if (!gameWon) {
+        hint.classList.add('visible');
+        updateHint();
+      }
+    }, 4000);
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  function dist(x1, y1, x2, y2) {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  }
+
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
+  function updateHint() {
+    if (gameWon) return;
+    const midX = (toddlerX + milkX) / 2;
+    const midY = (toddlerY + milkY) / 2;
+    hint.style.left = midX + 'px';
+    hint.style.top = midY + 'px';
+
+    // Point hint toward milk
+    const angle = Math.atan2(milkY - toddlerY, milkX - toddlerX);
+    hint.style.transform = `rotate(${angle}rad)`;
+  }
+
+  function spawnGiggle(x, y) {
+    const now = Date.now();
+    if (now - lastGiggle < 600) return;
+    lastGiggle = now;
+
+    const el = document.createElement('div');
+    el.className = 'giggle';
+    const texts = ['hehe', '!', 'hihi', 'tee hee', '~'];
+    el.textContent = texts[Math.floor(Math.random() * texts.length)];
+    el.style.left = (x + Math.random() * 30 - 15) + 'px';
+    el.style.top = (y - 20) + 'px';
+    el.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+    gameArea.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  }
+
+  function spawnFootprint(x, y) {
+    const now = Date.now();
+    if (now - lastFootprint < 200) return;
+    lastFootprint = now;
+
+    const el = document.createElement('div');
+    el.className = 'footprint';
+    el.textContent = '👣';
+    el.style.left = x + 'px';
+    el.style.top = (y + TODDLER_SIZE - 10) + 'px';
+    el.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+    gameArea.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+
+  function showSpeech(text) {
+    clearTimeout(speechTimeout);
+    speechBubble.textContent = text;
+    speechBubble.style.left = (toddlerX - 10) + 'px';
+    speechBubble.style.top = (toddlerY - 45) + 'px';
+    speechBubble.classList.add('visible');
+    speechTimeout = setTimeout(() => speechBubble.classList.remove('visible'), 1500);
+  }
+
+  function spawnConfetti() {
+    const emojis = ['🎉', '🌟', '⭐', '✨', '💖', '🎊', '🌈', '🦋'];
+    for (let i = 0; i < 40; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = (Math.random() * window.innerWidth) + 'px';
+        el.style.top = '-30px';
+        el.style.animationDuration = (2 + Math.random() * 3) + 's';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+      }, i * 80);
+    }
+  }
+
+  function win() {
+    gameWon = true;
+    hint.classList.remove('visible');
+    toddler.classList.add('caught');
+    speechBubble.classList.remove('visible');
+
+    // Move toddler right next to milk
+    toddlerX = milkX + 30;
+    toddlerY = milkY;
+    toddler.style.left = toddlerX + 'px';
+    toddler.style.top = toddlerY + 'px';
+
+    showSpeech('Yay! Milk! 🥛');
+
+    setTimeout(() => {
+      winScreen.classList.add('active');
+      spawnConfetti();
+    }, 1200);
+  }
+
+  function gameLoop() {
+    if (gameWon) return;
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    const dToMouse = dist(mouseX, mouseY, toddlerX + TODDLER_SIZE/2, toddlerY + TODDLER_SIZE/2);
+
+    if (dToMouse < FLEE_DISTANCE && mouseX > 0) {
+      // Run away from cursor
+      const angle = Math.atan2(toddlerY + TODDLER_SIZE/2 - mouseY, toddlerX + TODDLER_SIZE/2 - mouseX);
+
+      // Add slight randomness for playful movement
+      const wobble = (Math.random() - 0.5) * 0.6;
+      const fleeAngle = angle + wobble;
+
+      // Also add a slight bias toward the milk (makes game winnable!)
+      const toMilkAngle = Math.atan2(milkY - toddlerY, milkX - toddlerX);
+      const milkBias = 0.15;
+
+      const finalAngle = fleeAngle + milkBias * Math.sin(toMilkAngle - fleeAngle);
+
+      // Faster when cursor is closer
+      const proximity = 1 - (dToMouse / FLEE_DISTANCE);
+      const speed = FLEE_SPEED * (0.5 + proximity * 0.8);
+
+      toddlerVx = Math.cos(finalAngle) * speed;
+      toddlerVy = Math.sin(finalAngle) * speed;
+
+      isMoving = true;
+
+      // Direction facing
+      if (toddlerVx < -0.5) toddler.classList.add('running-left');
+      else if (toddlerVx > 0.5) toddler.classList.remove('running-left');
+
+      // Random giggle
+      if (Math.random() < 0.03) {
+        showSpeech(giggles[Math.floor(Math.random() * giggles.length)]);
+      }
+
+      spawnGiggle(toddlerX + TODDLER_SIZE/2, toddlerY);
+      spawnFootprint(toddlerX + TODDLER_SIZE/2, toddlerY);
+    } else {
+      // Decelerate
+      toddlerVx *= 0.92;
+      toddlerVy *= 0.92;
+
+      if (Math.abs(toddlerVx) < 0.1 && Math.abs(toddlerVy) < 0.1) {
+        toddlerVx = 0;
+        toddlerVy = 0;
+        if (isMoving) {
+          isMoving = false;
+        }
+      }
+    }
+
+    // Apply velocity
+    toddlerX += toddlerVx;
+    toddlerY += toddlerVy;
+
+    // Bounce off walls
+    if (toddlerX < PADDING) { toddlerX = PADDING; toddlerVx = Math.abs(toddlerVx) * 0.6; }
+    if (toddlerX > w - TODDLER_SIZE - PADDING) { toddlerX = w - TODDLER_SIZE - PADDING; toddlerVx = -Math.abs(toddlerVx) * 0.6; }
+    if (toddlerY < PADDING + 80) { toddlerY = PADDING + 80; toddlerVy = Math.abs(toddlerVy) * 0.6; }
+    if (toddlerY > h - TODDLER_SIZE - PADDING - 80) { toddlerY = h - TODDLER_SIZE - PADDING - 80; toddlerVy = -Math.abs(toddlerVy) * 0.6; }
+
+    toddler.style.left = toddlerX + 'px';
+    toddler.style.top = toddlerY + 'px';
+
+    // Update speech bubble position
+    speechBubble.style.left = (toddlerX - 10) + 'px';
+    speechBubble.style.top = (toddlerY - 45) + 'px';
+
+    // Check if toddler reached milk!
+    const dToMilk = dist(toddlerX + TODDLER_SIZE/2, toddlerY + TODDLER_SIZE/2,
+                          milkX + MILK_SIZE/2, milkY + MILK_SIZE/2);
+
+    if (dToMilk < MILK_CATCH_DIST) {
+      win();
+      return;
+    }
+
+    // Update hint
+    if (hint.classList.contains('visible')) {
+      updateHint();
+    }
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Event listeners
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    hint.classList.remove('visible');
+    clearTimeout(hintTimer);
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    mouseX = touch.clientX;
+    mouseY = touch.clientY;
+    hint.classList.remove('visible');
+    clearTimeout(hintTimer);
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => {
+    mouseX = -999;
+    mouseY = -999;
+  });
+
+  playAgain.addEventListener('click', () => {
+    init();
+  });
+
+  // Start!
+  init();
+})();
+</script>
+
+</body>
+</html>
