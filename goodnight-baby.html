@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Goodnight Baby! Rock the Baby to Sleep</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,6 +11,7 @@
     overflow: hidden;
     font-family: 'Segoe UI', 'Arial Rounded MT Bold', sans-serif;
     height: 100vh;
+    height: 100dvh;
     width: 100vw;
     user-select: none;
     transition: background 2s;
@@ -28,6 +29,7 @@
     position: relative;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -101,6 +103,7 @@
     top: 0; left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     background: linear-gradient(180deg, #1a1a3e 0%, #2d2d6b 40%, #3a3a8a 100%);
     z-index: 200;
     display: flex;
@@ -205,6 +208,7 @@
   #meter-container {
     position: absolute;
     bottom: 40px;
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -258,6 +262,7 @@
   #rock-guide {
     position: absolute;
     bottom: 80px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -375,6 +380,7 @@
     top: 0; left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     background: rgba(10, 10, 30, 0.0);
     z-index: 100;
     display: none;
@@ -517,6 +523,7 @@
   #touch-hint {
     position: absolute;
     bottom: 110px;
+    bottom: calc(110px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -776,7 +783,7 @@
 
     var el = document.createElement('div');
     el.className = 'fussy-burst';
-    var bursts = ['\u2757', '\u1F4A2', '\u1F62D', '\u2755'];
+    var bursts = ['\u2757', '\u2755', '\u203C\uFE0F'];
     el.textContent = bursts[Math.floor(Math.random() * bursts.length)];
     var cradleRect = cradle.getBoundingClientRect();
     el.style.left = (cradleRect.left + cradleRect.width / 2 + Math.random() * 60 - 30) + 'px';
@@ -786,7 +793,7 @@
   }
 
   function spawnQuietConfetti() {
-    var emojis = ['\u2728', '\u1F31F', '\u2B50', '\u1F4AB', '\u1F30C', '\u1F319', '\u1F92B'];
+    var emojis = ['\u2728', '\u2B50', '\u2734\uFE0F', '\u2728', '\u2B50'];
     for (var i = 0; i < 25; i++) {
       (function(idx) {
         setTimeout(function() {
