@@ -776,7 +776,7 @@
 
     var el = document.createElement('div');
     el.className = 'fussy-burst';
-    var bursts = ['\u2757', '\u1F4A2', '\u1F62D', '\u2755'];
+    var bursts = ['\u2757', '\u2755', '\u203C\uFE0F'];
     el.textContent = bursts[Math.floor(Math.random() * bursts.length)];
     var cradleRect = cradle.getBoundingClientRect();
     el.style.left = (cradleRect.left + cradleRect.width / 2 + Math.random() * 60 - 30) + 'px';
@@ -786,7 +786,7 @@
   }
 
   function spawnQuietConfetti() {
-    var emojis = ['\u2728', '\u1F31F', '\u2B50', '\u1F4AB', '\u1F30C', '\u1F319', '\u1F92B'];
+    var emojis = ['\u2728', '\u2B50', '\u2734\uFE0F', '\u2728', '\u2B50'];
     for (var i = 0; i < 25; i++) {
       (function(idx) {
         setTimeout(function() {
