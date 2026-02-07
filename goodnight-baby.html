@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goodnight Baby! Rock the Baby to Sleep</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Arial Rounded MT Bold', sans-serif;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+    transition: background 2s;
+  }
+
+  body.awake {
+    background: linear-gradient(180deg, #1a1a3e 0%, #2d2d6b 40%, #3a3a8a 100%);
+  }
+
+  body.sleeping {
+    background: linear-gradient(180deg, #0a0a1e 0%, #15153a 40%, #1a1a4a 100%);
+  }
+
+  #game-area {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Moon */
+  .moon {
+    position: absolute;
+    top: 40px;
+    right: 60px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle at 35% 35%, #fffde7 0%, #ffd54f 60%, transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(255, 213, 79, 0.4), 0 0 80px rgba(255, 213, 79, 0.2);
+    z-index: 1;
+    animation: moon-glow 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes moon-glow {
+    0% { box-shadow: 0 0 40px rgba(255, 213, 79, 0.4), 0 0 80px rgba(255, 213, 79, 0.2); }
+    100% { box-shadow: 0 0 50px rgba(255, 213, 79, 0.5), 0 0 100px rgba(255, 213, 79, 0.3); }
+  }
+
+  /* Stars */
+  .star {
+    position: absolute;
+    z-index: 1;
+    font-size: 16px;
+    opacity: 0.7;
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.3; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* Header */
+  #header {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+  }
+
+  #header h1 {
+    font-size: 2.2em;
+    color: #b3b3e6;
+    text-shadow: 0 0 20px rgba(179, 179, 230, 0.5);
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+
+  #header p {
+    font-size: 1em;
+    color: #8888bb;
+    margin-top: 5px;
+    background: rgba(255,255,255,0.08);
+    padding: 5px 15px;
+    border-radius: 20px;
+  }
+
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* Difficulty selector */
+  #difficulty-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #1a1a3e 0%, #2d2d6b 40%, #3a3a8a 100%);
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  #difficulty-screen.hidden {
+    display: none;
+  }
+
+  #difficulty-screen h1 {
+    font-size: 3em;
+    color: #b3b3e6;
+    text-shadow: 0 0 30px rgba(179, 179, 230, 0.5);
+    margin-bottom: 10px;
+  }
+
+  #difficulty-screen .subtitle {
+    font-size: 1.2em;
+    color: #8888bb;
+    margin-bottom: 40px;
+  }
+
+  .diff-btn {
+    display: block;
+    width: 240px;
+    margin: 10px;
+    padding: 16px 30px;
+    font-size: 1.3em;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+  }
+
+  .diff-btn:hover {
+    transform: scale(1.08);
+  }
+
+  .diff-btn.easy {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+  }
+  .diff-btn.easy:hover { box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6); }
+
+  .diff-btn.medium {
+    background: linear-gradient(135deg, #ff9800, #ffb74d);
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  }
+  .diff-btn.medium:hover { box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6); }
+
+  .diff-btn.hard {
+    background: linear-gradient(135deg, #f44336, #ef5350);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+  }
+  .diff-btn.hard:hover { box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6); }
+
+  .diff-desc {
+    font-size: 0.6em;
+    font-weight: normal;
+    opacity: 0.85;
+    display: block;
+    margin-top: 3px;
+  }
+
+  /* Cradle area */
+  #cradle-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    text-align: center;
+  }
+
+  #cradle {
+    position: relative;
+    display: inline-block;
+    transition: transform 0.15s ease-out;
+  }
+
+  #baby-emoji {
+    font-size: 80px;
+    display: block;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    transition: filter 1s;
+  }
+
+  #cradle-base {
+    font-size: 60px;
+    display: block;
+    margin-top: -15px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  }
+
+  /* Sleep meter */
+  #meter-container {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+  }
+
+  #meter-label {
+    font-size: 1em;
+    color: #8888bb;
+    margin-bottom: 8px;
+  }
+
+  #meter-bar-outer {
+    width: 280px;
+    height: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.15);
+    overflow: hidden;
+    position: relative;
+  }
+
+  #meter-bar-inner {
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.15s ease-out, background 0.5s;
+    background: linear-gradient(90deg, #7986cb, #5c6bc0, #3f51b5);
+  }
+
+  #meter-bar-inner.almost {
+    background: linear-gradient(90deg, #9575cd, #7e57c2, #673ab7);
+  }
+
+  #meter-bar-inner.close {
+    background: linear-gradient(90deg, #4dd0e1, #26c6da, #00bcd4);
+  }
+
+  #meter-percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75em;
+    font-weight: bold;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  /* Rocking guide */
+  #rock-guide {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 0.9em;
+    color: #6666aa;
+    opacity: 0;
+    transition: opacity 0.5s;
+    text-align: center;
+  }
+
+  #rock-guide.visible {
+    opacity: 1;
+  }
+
+  #rock-guide .arrow {
+    display: inline-block;
+    animation: sway-hint 1.5s ease-in-out infinite;
+    font-size: 1.5em;
+  }
+
+  @keyframes sway-hint {
+    0%, 100% { transform: translateX(-20px); }
+    50% { transform: translateX(20px); }
+  }
+
+  /* Speech bubbles */
+  .speech-bubble {
+    position: absolute;
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    z-index: 15;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: opacity 0.3s;
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    margin-left: -8px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid rgba(255,255,255,0.9);
+  }
+
+  .speech-bubble.visible {
+    opacity: 1;
+    animation: pop-in 0.3s ease-out;
+  }
+
+  @keyframes pop-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Floating Z's */
+  .zzz {
+    position: absolute;
+    font-size: 24px;
+    z-index: 14;
+    pointer-events: none;
+    color: #b3b3e6;
+    text-shadow: 0 0 10px rgba(179, 179, 230, 0.5);
+    animation: zzz-float 2.5s ease-out forwards;
+  }
+
+  @keyframes zzz-float {
+    0% { opacity: 0.8; transform: translateY(0) translateX(0) scale(1); }
+    50% { opacity: 0.6; transform: translateY(-40px) translateX(15px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-80px) translateX(-10px) scale(0.6); }
+  }
+
+  /* Music notes */
+  .music-note {
+    position: absolute;
+    font-size: 20px;
+    z-index: 14;
+    pointer-events: none;
+    animation: note-float 3s ease-out forwards;
+  }
+
+  @keyframes note-float {
+    0% { opacity: 0.7; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(-100px) rotate(20deg); }
+  }
+
+  /* Fussy indicator */
+  .fussy-burst {
+    position: absolute;
+    font-size: 28px;
+    z-index: 14;
+    pointer-events: none;
+    animation: fussy-pop 0.8s ease-out forwards;
+  }
+
+  @keyframes fussy-pop {
+    0% { opacity: 1; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.3); }
+    100% { opacity: 0; transform: scale(0.8) translateY(-20px); }
+  }
+
+  /* Quiet party / win screen */
+  #win-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 10, 30, 0.0);
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: background 1.5s;
+  }
+
+  #win-screen.active {
+    display: flex;
+    background: rgba(10, 10, 30, 0.92);
+  }
+
+  #win-screen h1 {
+    font-size: 3em;
+    color: #b3b3e6;
+    text-shadow: 0 0 30px rgba(179, 179, 230, 0.5);
+    animation: quiet-bounce 2s ease-in-out infinite alternate;
+    text-align: center;
+  }
+
+  #win-screen .win-emoji {
+    font-size: 70px;
+    animation: quiet-sway 3s ease-in-out infinite;
+    margin: 15px;
+  }
+
+  #win-screen .win-message {
+    font-size: 1.3em;
+    color: #8888bb;
+    margin-top: 10px;
+    text-align: center;
+    max-width: 450px;
+    line-height: 1.6;
+  }
+
+  #win-screen .party-row {
+    font-size: 36px;
+    margin-top: 15px;
+    animation: quiet-sway 2s ease-in-out infinite;
+    letter-spacing: 10px;
+  }
+
+  #win-screen .shh {
+    font-size: 1.5em;
+    color: #ffcc80;
+    margin-top: 10px;
+    animation: shh-pulse 2s ease-in-out infinite alternate;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #play-again, #change-diff {
+    padding: 12px 28px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  #play-again {
+    background: linear-gradient(135deg, #5c6bc0, #3f51b5);
+    color: white;
+    box-shadow: 0 4px 15px rgba(63, 81, 181, 0.4);
+  }
+
+  #play-again:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(63, 81, 181, 0.6);
+  }
+
+  #change-diff {
+    background: rgba(255,255,255,0.1);
+    color: #b3b3e6;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  #change-diff:hover {
+    transform: scale(1.08);
+    background: rgba(255,255,255,0.15);
+  }
+
+  @keyframes quiet-bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+  }
+
+  @keyframes quiet-sway {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+
+  @keyframes shh-pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* Quiet confetti */
+  .confetti {
+    position: fixed;
+    z-index: 101;
+    pointer-events: none;
+    font-size: 18px;
+    animation: confetti-fall-quiet linear forwards;
+  }
+
+  @keyframes confetti-fall-quiet {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Status indicator */
+  #status {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 1em;
+    padding: 4px 16px;
+    border-radius: 15px;
+    color: #ccc;
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s;
+    text-align: center;
+  }
+
+  /* Mobile touch hint */
+  #touch-hint {
+    position: absolute;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 0.95em;
+    color: #6666aa;
+    background: rgba(255,255,255,0.08);
+    padding: 8px 16px;
+    border-radius: 20px;
+    opacity: 0;
+    animation: fade-in-hint 1s 2s forwards;
+  }
+
+  @keyframes fade-in-hint {
+    to { opacity: 1; }
+  }
+
+  /* Difficulty badge */
+  #diff-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    font-size: 0.8em;
+    padding: 4px 12px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+  }
+
+  #diff-badge.easy { background: rgba(76, 175, 80, 0.6); }
+  #diff-badge.medium { background: rgba(255, 152, 0, 0.6); }
+  #diff-badge.hard { background: rgba(244, 67, 54, 0.6); }
+</style>
+</head>
+<body class="awake">
+
+<div id="difficulty-screen">
+  <h1>&#x1F319; Goodnight Baby</h1>
+  <div class="subtitle">Rock the baby to sleep!</div>
+  <button class="diff-btn easy" data-diff="easy">
+    Easy
+    <span class="diff-desc">Sleepy baby, gentle rocking</span>
+  </button>
+  <button class="diff-btn medium" data-diff="medium">
+    Medium
+    <span class="diff-desc">Restless baby, steady rhythm</span>
+  </button>
+  <button class="diff-btn hard" data-diff="hard">
+    Hard
+    <span class="diff-desc">Fussy baby, patience required</span>
+  </button>
+</div>
+
+<div id="game-area">
+  <div class="moon"></div>
+
+  <div id="header">
+    <h1>&#x1F319; Goodnight Baby</h1>
+    <p>Gently move side to side to rock the baby</p>
+  </div>
+
+  <div id="status">Waiting for rocking...</div>
+
+  <div id="diff-badge"></div>
+
+  <div id="cradle-container">
+    <div id="cradle">
+      <span id="baby-emoji">&#x1F476;</span>
+      <span id="cradle-base">&#x1F6CF;&#xFE0F;</span>
+    </div>
+  </div>
+
+  <div id="meter-container">
+    <div id="meter-label">Sleepiness</div>
+    <div id="meter-bar-outer">
+      <div id="meter-bar-inner"></div>
+      <div id="meter-percent">0%</div>
+    </div>
+  </div>
+
+  <div id="rock-guide">
+    <div class="arrow">&#x1F449;</div>
+    <br>Move your cursor side to side
+  </div>
+
+  <div id="touch-hint">Swipe side to side to rock the baby!</div>
+</div>
+
+<div id="win-screen">
+  <div class="win-emoji">&#x1F634;</div>
+  <h1>Shhh... Baby's Asleep!</h1>
+  <div class="win-message">
+    You did it! The little one is sound asleep.<br>
+    Time to celebrate... quietly!
+  </div>
+  <div class="shh">&#x1F92B; shhh...</div>
+  <div class="party-row">&#x1F483; &#x1F57A; &#x1F389; &#x1F57A; &#x1F483;</div>
+  <div class="win-message" style="font-size:0.9em; margin-top:8px; opacity:0.7;">
+    (tiptoeing intensifies)
+  </div>
+  <div class="btn-row">
+    <button id="play-again">Rock Again &#x1F504;</button>
+    <button id="change-diff">Change Difficulty</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var diffScreen = document.getElementById('difficulty-screen');
+  var gameArea = document.getElementById('game-area');
+  var winScreen = document.getElementById('win-screen');
+  var playAgain = document.getElementById('play-again');
+  var changeDiff = document.getElementById('change-diff');
+  var cradle = document.getElementById('cradle');
+  var babyEmoji = document.getElementById('baby-emoji');
+  var meterInner = document.getElementById('meter-bar-inner');
+  var meterPercent = document.getElementById('meter-percent');
+  var statusEl = document.getElementById('status');
+  var rockGuide = document.getElementById('rock-guide');
+  var diffBadge = document.getElementById('diff-badge');
+  var speechBubble = createSpeechBubble();
+
+  // Difficulty settings
+  var DIFFICULTIES = {
+    easy: {
+      label: 'Easy',
+      sleepGainRate: 0.35,
+      sleepDecayRate: 0.08,
+      erraticPenalty: 0.3,
+      maxRockSpeed: 18,
+      minRockSpeed: 1.5,
+      fussyChance: 0,
+      fussyPenalty: 0,
+      rockTolerance: 2.5
+    },
+    medium: {
+      label: 'Medium',
+      sleepGainRate: 0.22,
+      sleepDecayRate: 0.14,
+      erraticPenalty: 0.6,
+      maxRockSpeed: 14,
+      minRockSpeed: 2,
+      fussyChance: 0.003,
+      fussyPenalty: 5,
+      rockTolerance: 1.8
+    },
+    hard: {
+      label: 'Hard',
+      sleepGainRate: 0.14,
+      sleepDecayRate: 0.2,
+      erraticPenalty: 1.2,
+      maxRockSpeed: 11,
+      minRockSpeed: 2.5,
+      fussyChance: 0.008,
+      fussyPenalty: 12,
+      rockTolerance: 1.2
+    }
+  };
+
+  var currentDifficulty = 'easy';
+  var settings = DIFFICULTIES.easy;
+
+  // Game state
+  var sleepiness = 0;
+  var gameWon = false;
+  var gameActive = false;
+  var mouseX = -999;
+  var prevMouseX = -999;
+  var mouseHistory = [];
+  var directionChanges = [];
+  var lastDirectionChangeTime = 0;
+  var lastDirection = 0;
+  var rockingQuality = 0;
+  var lastZzz = 0;
+  var lastNote = 0;
+  var lastFussy = 0;
+  var speechTimeout = null;
+  var guideTimer = null;
+  var cradleAngle = 0;
+  var targetCradleAngle = 0;
+  var hasInteracted = false;
+
+  var sleepyPhrases = ['*yawn*', 'mmm...', 'so cozy...', 'sleepy...', 'zzz...'];
+  var fussyPhrases = ['waah!', 'no sleep!', 'hmph!', 'too fast!', '!!'];
+  var almostPhrases = ['almost...', 'so sleepy...', 'eyes heavy...', 'nearly there...'];
+
+  // Create stars
+  function createStars() {
+    var starChars = ['\u2B50', '\u2728', '\u2B50', '\u2728', '\u2B50'];
+    for (var i = 0; i < 25; i++) {
+      var star = document.createElement('div');
+      star.className = 'star';
+      star.textContent = starChars[Math.floor(Math.random() * starChars.length)];
+      star.style.left = (Math.random() * 90 + 5) + '%';
+      star.style.top = (Math.random() * 40 + 5) + '%';
+      star.style.animationDelay = (Math.random() * 3) + 's';
+      star.style.animationDuration = (2 + Math.random() * 3) + 's';
+      star.style.fontSize = (10 + Math.random() * 14) + 'px';
+      gameArea.appendChild(star);
+    }
+  }
+
+  function createSpeechBubble() {
+    var el = document.createElement('div');
+    el.className = 'speech-bubble';
+    document.getElementById('game-area').appendChild(el);
+    return el;
+  }
+
+  function showSpeech(text) {
+    clearTimeout(speechTimeout);
+    var cradleRect = cradle.getBoundingClientRect();
+    speechBubble.textContent = text;
+    speechBubble.style.left = (cradleRect.left + cradleRect.width / 2 - 40) + 'px';
+    speechBubble.style.top = (cradleRect.top - 45) + 'px';
+    speechBubble.classList.add('visible');
+    speechTimeout = setTimeout(function() { speechBubble.classList.remove('visible'); }, 1500);
+  }
+
+  function spawnZzz() {
+    var now = Date.now();
+    if (now - lastZzz < 800) return;
+    lastZzz = now;
+
+    var el = document.createElement('div');
+    el.className = 'zzz';
+    var texts = ['z', 'Z', 'zZ', 'Zz'];
+    el.textContent = texts[Math.floor(Math.random() * texts.length)];
+    var cradleRect = cradle.getBoundingClientRect();
+    el.style.left = (cradleRect.left + cradleRect.width / 2 + Math.random() * 40 - 20) + 'px';
+    el.style.top = (cradleRect.top - 10) + 'px';
+    gameArea.appendChild(el);
+    setTimeout(function() { el.remove(); }, 2500);
+  }
+
+  function spawnNote() {
+    var now = Date.now();
+    if (now - lastNote < 1200) return;
+    lastNote = now;
+
+    var el = document.createElement('div');
+    el.className = 'music-note';
+    var notes = ['\u266A', '\u266B', '\u266C'];
+    el.textContent = notes[Math.floor(Math.random() * notes.length)];
+    el.style.color = 'rgba(179, 179, 230, 0.5)';
+    var cradleRect = cradle.getBoundingClientRect();
+    el.style.left = (cradleRect.left + Math.random() * cradleRect.width) + 'px';
+    el.style.top = (cradleRect.top + cradleRect.height / 2) + 'px';
+    gameArea.appendChild(el);
+    setTimeout(function() { el.remove(); }, 3000);
+  }
+
+  function spawnFussyBurst() {
+    var now = Date.now();
+    if (now - lastFussy < 500) return;
+    lastFussy = now;
+
+    var el = document.createElement('div');
+    el.className = 'fussy-burst';
+    var bursts = ['\u2757', '\u1F4A2', '\u1F62D', '\u2755'];
+    el.textContent = bursts[Math.floor(Math.random() * bursts.length)];
+    var cradleRect = cradle.getBoundingClientRect();
+    el.style.left = (cradleRect.left + cradleRect.width / 2 + Math.random() * 60 - 30) + 'px';
+    el.style.top = (cradleRect.top - 20 + Math.random() * 20) + 'px';
+    gameArea.appendChild(el);
+    setTimeout(function() { el.remove(); }, 800);
+  }
+
+  function spawnQuietConfetti() {
+    var emojis = ['\u2728', '\u1F31F', '\u2B50', '\u1F4AB', '\u1F30C', '\u1F319', '\u1F92B'];
+    for (var i = 0; i < 25; i++) {
+      (function(idx) {
+        setTimeout(function() {
+          var el = document.createElement('div');
+          el.className = 'confetti';
+          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          el.style.left = (Math.random() * window.innerWidth) + 'px';
+          el.style.top = '-30px';
+          el.style.animationDuration = (4 + Math.random() * 4) + 's';
+          document.body.appendChild(el);
+          setTimeout(function() { el.remove(); }, 8000);
+        }, idx * 150);
+      })(i);
+    }
+  }
+
+  function updateMeter() {
+    var pct = Math.round(sleepiness);
+    meterInner.style.width = pct + '%';
+    meterPercent.textContent = pct + '%';
+
+    meterInner.classList.remove('almost', 'close');
+    if (pct >= 80) {
+      meterInner.classList.add('close');
+    } else if (pct >= 50) {
+      meterInner.classList.add('almost');
+    }
+  }
+
+  function updateBabyState() {
+    if (sleepiness < 25) {
+      babyEmoji.textContent = '\uD83D\uDC76';  // baby
+    } else if (sleepiness < 50) {
+      babyEmoji.textContent = '\uD83D\uDE2A';  // sleepy face
+    } else if (sleepiness < 75) {
+      babyEmoji.textContent = '\uD83D\uDE34';  // sleeping face
+    } else {
+      babyEmoji.textContent = '\uD83D\uDE34';  // sleeping face (deeper)
+      babyEmoji.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3)) brightness(0.85)';
+    }
+
+    if (sleepiness < 75) {
+      babyEmoji.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
+    }
+
+    // Body gets darker as baby sleeps
+    if (sleepiness > 60) {
+      document.body.classList.add('sleeping');
+      document.body.classList.remove('awake');
+    } else {
+      document.body.classList.add('awake');
+      document.body.classList.remove('sleeping');
+    }
+  }
+
+  function updateCradle() {
+    cradleAngle += (targetCradleAngle - cradleAngle) * 0.12;
+    cradle.style.transform = 'rotate(' + cradleAngle + 'deg)';
+  }
+
+  function analyzeRocking() {
+    var now = Date.now();
+
+    // Track mouse movement direction
+    if (mouseX < 0) return { quality: 0, speed: 0 };
+
+    var dx = mouseX - prevMouseX;
+    var speed = Math.abs(dx);
+    var direction = dx > 0.5 ? 1 : (dx < -0.5 ? -1 : 0);
+
+    // Detect direction change
+    if (direction !== 0 && direction !== lastDirection) {
+      if (lastDirection !== 0) {
+        directionChanges.push(now);
+        lastDirectionChangeTime = now;
+
+        // Keep only recent changes
+        while (directionChanges.length > 10) {
+          directionChanges.shift();
+        }
+      }
+      lastDirection = direction;
+    }
+
+    // Calculate rocking rhythm quality
+    var quality = 0;
+
+    if (directionChanges.length >= 2) {
+      // Calculate intervals between direction changes
+      var intervals = [];
+      for (var i = 1; i < directionChanges.length; i++) {
+        intervals.push(directionChanges[i] - directionChanges[i - 1]);
+      }
+
+      // Check rhythm consistency (lower variance = better)
+      var avgInterval = intervals.reduce(function(a, b) { return a + b; }, 0) / intervals.length;
+      var variance = intervals.reduce(function(a, b) { return a + Math.pow(b - avgInterval, 2); }, 0) / intervals.length;
+      var stdDev = Math.sqrt(variance);
+      var consistency = Math.max(0, 1 - (stdDev / avgInterval));
+
+      // Ideal interval is 400-800ms
+      var idealMin = 350;
+      var idealMax = 900;
+      var rhythmScore = 0;
+      if (avgInterval >= idealMin && avgInterval <= idealMax) {
+        rhythmScore = 1;
+      } else if (avgInterval < idealMin) {
+        rhythmScore = Math.max(0, avgInterval / idealMin);
+      } else {
+        rhythmScore = Math.max(0, 1 - (avgInterval - idealMax) / 1000);
+      }
+
+      quality = consistency * rhythmScore;
+
+      // Check if not rocking recently
+      if (now - lastDirectionChangeTime > 1500) {
+        quality *= Math.max(0, 1 - (now - lastDirectionChangeTime - 1500) / 2000);
+      }
+    }
+
+    return { quality: quality, speed: speed };
+  }
+
+  function gameLoop() {
+    if (!gameActive || gameWon) return;
+
+    var rocking = analyzeRocking();
+    rockingQuality += (rocking.quality - rockingQuality) * 0.1;
+
+    // Move cradle based on mouse movement
+    if (mouseX > 0) {
+      var dx = mouseX - prevMouseX;
+      targetCradleAngle = Math.max(-15, Math.min(15, dx * 1.5));
+    } else {
+      targetCradleAngle *= 0.9;
+    }
+    updateCradle();
+
+    // Update status
+    var now = Date.now();
+    var timeSinceRock = now - lastDirectionChangeTime;
+
+    if (timeSinceRock > 2000 || !hasInteracted) {
+      statusEl.textContent = 'Waiting for rocking...';
+      statusEl.style.color = '#888';
+    } else if (rocking.speed > settings.maxRockSpeed) {
+      statusEl.textContent = 'Too fast! Gentle rocks...';
+      statusEl.style.color = '#ef5350';
+    } else if (rockingQuality > 0.5) {
+      statusEl.textContent = 'Nice rhythm! Keep going...';
+      statusEl.style.color = '#81c784';
+    } else if (rockingQuality > 0.2) {
+      statusEl.textContent = 'Rocking...';
+      statusEl.style.color = '#b3b3e6';
+    } else {
+      statusEl.textContent = 'Find a steady rhythm...';
+      statusEl.style.color = '#ffcc80';
+    }
+
+    // Sleep gain/decay
+    if (rockingQuality > 0.3 && rocking.speed <= settings.maxRockSpeed && rocking.speed >= settings.minRockSpeed) {
+      // Good rocking - gain sleepiness
+      var gain = settings.sleepGainRate * rockingQuality * settings.rockTolerance;
+      sleepiness = Math.min(100, sleepiness + gain);
+
+      // Visual feedback
+      spawnNote();
+      if (sleepiness > 40) {
+        spawnZzz();
+      }
+
+      // Sleepy phrases
+      if (Math.random() < 0.008 && sleepiness > 20) {
+        if (sleepiness > 75) {
+          showSpeech(almostPhrases[Math.floor(Math.random() * almostPhrases.length)]);
+        } else {
+          showSpeech(sleepyPhrases[Math.floor(Math.random() * sleepyPhrases.length)]);
+        }
+      }
+    } else if (rocking.speed > settings.maxRockSpeed && hasInteracted) {
+      // Too fast - penalty
+      sleepiness = Math.max(0, sleepiness - settings.erraticPenalty);
+      spawnFussyBurst();
+
+      if (Math.random() < 0.04) {
+        showSpeech(fussyPhrases[Math.floor(Math.random() * fussyPhrases.length)]);
+      }
+    } else {
+      // Not rocking or poor quality - decay
+      if (timeSinceRock > 1000 && hasInteracted) {
+        sleepiness = Math.max(0, sleepiness - settings.sleepDecayRate);
+      }
+    }
+
+    // Random fussy moments (medium/hard)
+    if (settings.fussyChance > 0 && Math.random() < settings.fussyChance && sleepiness > 15 && sleepiness < 90) {
+      sleepiness = Math.max(0, sleepiness - settings.fussyPenalty);
+      spawnFussyBurst();
+      showSpeech(fussyPhrases[Math.floor(Math.random() * fussyPhrases.length)]);
+    }
+
+    updateMeter();
+    updateBabyState();
+
+    // Check win
+    if (sleepiness >= 100) {
+      win();
+      return;
+    }
+
+    prevMouseX = mouseX;
+    requestAnimationFrame(gameLoop);
+  }
+
+  function win() {
+    gameWon = true;
+    gameActive = false;
+    statusEl.textContent = 'Baby is asleep!';
+    statusEl.style.color = '#81c784';
+    babyEmoji.textContent = '\uD83D\uDE34';
+    babyEmoji.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3)) brightness(0.8)';
+    targetCradleAngle = 0;
+    speechBubble.classList.remove('visible');
+
+    document.body.classList.add('sleeping');
+    document.body.classList.remove('awake');
+
+    setTimeout(function() {
+      winScreen.classList.add('active');
+      spawnQuietConfetti();
+    }, 1500);
+  }
+
+  function startGame(difficulty) {
+    currentDifficulty = difficulty;
+    settings = DIFFICULTIES[difficulty];
+
+    diffScreen.classList.add('hidden');
+    diffBadge.textContent = settings.label;
+    diffBadge.className = '';
+    diffBadge.id = 'diff-badge';
+    diffBadge.classList.add(difficulty);
+
+    resetGame();
+  }
+
+  function resetGame() {
+    sleepiness = 0;
+    gameWon = false;
+    gameActive = true;
+    mouseX = -999;
+    prevMouseX = -999;
+    mouseHistory = [];
+    directionChanges = [];
+    lastDirectionChangeTime = 0;
+    lastDirection = 0;
+    rockingQuality = 0;
+    cradleAngle = 0;
+    targetCradleAngle = 0;
+    hasInteracted = false;
+
+    winScreen.classList.remove('active');
+    document.body.classList.add('awake');
+    document.body.classList.remove('sleeping');
+
+    babyEmoji.textContent = '\uD83D\uDC76';
+    babyEmoji.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))';
+    cradle.style.transform = 'rotate(0deg)';
+
+    updateMeter();
+    statusEl.textContent = 'Waiting for rocking...';
+    statusEl.style.color = '#888';
+
+    // Clear floating elements
+    document.querySelectorAll('.zzz, .music-note, .fussy-burst, .confetti').forEach(function(el) { el.remove(); });
+
+    // Show guide after delay
+    rockGuide.classList.remove('visible');
+    clearTimeout(guideTimer);
+    guideTimer = setTimeout(function() {
+      if (!hasInteracted && gameActive) {
+        rockGuide.classList.add('visible');
+      }
+    }, 3000);
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Event listeners
+  document.addEventListener('mousemove', function(e) {
+    if (!gameActive) return;
+    prevMouseX = mouseX;
+    mouseX = e.clientX;
+    if (!hasInteracted && mouseX > 0) {
+      hasInteracted = true;
+      rockGuide.classList.remove('visible');
+      clearTimeout(guideTimer);
+    }
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!gameActive) return;
+    e.preventDefault();
+    var touch = e.touches[0];
+    prevMouseX = mouseX;
+    mouseX = touch.clientX;
+    if (!hasInteracted && mouseX > 0) {
+      hasInteracted = true;
+      rockGuide.classList.remove('visible');
+      clearTimeout(guideTimer);
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    mouseX = -999;
+    prevMouseX = -999;
+  });
+
+  // Difficulty buttons
+  var diffBtns = document.querySelectorAll('.diff-btn');
+  for (var i = 0; i < diffBtns.length; i++) {
+    diffBtns[i].addEventListener('click', function() {
+      startGame(this.getAttribute('data-diff'));
+    });
+  }
+
+  playAgain.addEventListener('click', function() {
+    resetGame();
+  });
+
+  changeDiff.addEventListener('click', function() {
+    winScreen.classList.remove('active');
+    gameActive = false;
+    diffScreen.classList.remove('hidden');
+  });
+
+  // Initialize stars
+  createStars();
+})();
+</script>
+
+</body>
+</html>
