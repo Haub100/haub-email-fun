@@ -186,13 +186,6 @@
     box-shadow: 0 8px 30px rgba(198, 12, 48, 0.5);
   }
 
-  .penalty-note {
-    color: #ff6b6b;
-    font-size: 0.85em;
-    margin-top: 8px;
-    font-style: italic;
-  }
-
   /* HUD */
   #hud {
     position: absolute;
@@ -240,7 +233,7 @@
   /* Football */
   .football {
     position: absolute;
-    font-size: 40px;
+    font-size: 44px;
     z-index: 20;
     cursor: grab;
     filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
@@ -258,14 +251,6 @@
     cursor: default;
   }
 
-  /* Aim line */
-  #aim-line {
-    position: absolute;
-    z-index: 15;
-    pointer-events: none;
-    display: none;
-  }
-
   /* Hoop / Ring target */
   .hoop {
     position: absolute;
@@ -274,8 +259,8 @@
   }
 
   .hoop-ring {
-    width: 90px;
-    height: 55px;
+    width: 100px;
+    height: 60px;
     border: 6px solid #ffd700;
     border-radius: 50%;
     position: relative;
@@ -360,7 +345,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 120px;
+    height: 32%;
     border-top: 2px dashed rgba(255, 255, 255, 0.15);
     z-index: 5;
     pointer-events: none;
@@ -507,7 +492,7 @@
   /* Mobile touch hint */
   #touch-hint {
     position: absolute;
-    bottom: 130px;
+    bottom: 34%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -556,10 +541,9 @@
       <div class="team-detail">Seattle</div>
     </button>
     <button class="team-btn btn-patriots" id="pick-patriots">
-      <div class="team-emoji">&#x1F1FA;&#x1F1F8;</div>
+      <div class="team-emoji">&#x1F3C8;</div>
       <div class="team-name">Patriots</div>
       <div class="team-detail">New England</div>
-      <div class="penalty-note">-5 point penalty &#x1F611;</div>
     </button>
   </div>
 </div>
@@ -613,14 +597,14 @@
 
   /* -------- Constants -------- */
   var GAME_DURATION = 30;
-  var FOOTBALL_SIZE = 40;
-  var HOOP_WIDTH = 90;
-  var HOOP_HEIGHT = 55;
-  var HOOP_HIT_RADIUS = 55;
-  var GRAVITY = 0.35;
-  var FLING_MULTIPLIER = 0.22;
+  var FOOTBALL_SIZE = 44;
+  var HOOP_WIDTH = 100;
+  var HOOP_HEIGHT = 60;
+  var HOOP_HIT_RADIUS = 65;
+  var GRAVITY = 0.3;
+  var FLING_MULTIPLIER = 0.2;
   var MAX_HOOPS = 3;
-  var HOOP_SPAWN_INTERVAL = 2200;
+  var HOOP_SPAWN_INTERVAL = 2000;
   var PATRIOT_PENALTY = 5;
   var POINTS_BASE = 10;
   var POINTS_BONUS_FAR = 5;
@@ -698,7 +682,7 @@
     el.className = 'football';
     el.innerHTML = '&#x1F3C8;';
     var x = window.innerWidth / 2 - FOOTBALL_SIZE / 2;
-    var y = window.innerHeight - 90;
+    var y = window.innerHeight * 0.72;
     el.style.left = x + 'px';
     el.style.top = y + 'px';
     gameArea.appendChild(el);
@@ -789,7 +773,7 @@
 
   function resetBallPosition(ball) {
     ball.x = window.innerWidth / 2 - FOOTBALL_SIZE / 2;
-    ball.y = window.innerHeight - 90;
+    ball.y = window.innerHeight * 0.72;
     ball.el.style.left = ball.x + 'px';
     ball.el.style.top = ball.y + 'px';
   }
@@ -837,13 +821,13 @@
     var w = window.innerWidth;
     var h = window.innerHeight;
 
-    var margin = 80;
+    var margin = 60;
     var x = margin + Math.random() * (w - HOOP_WIDTH - margin * 2);
-    var y = 80 + Math.random() * (h * 0.45);
+    var y = 70 + Math.random() * (h * 0.5);
 
     /* How far from center (farther = bonus points) */
     var centerDist = Math.abs(x + HOOP_WIDTH / 2 - w / 2) / (w / 2);
-    var heightBonus = 1 - (y / (h * 0.5));
+    var heightBonus = 1 - (y / (h * 0.55));
     var points = POINTS_BASE + Math.round((centerDist + heightBonus) * POINTS_BONUS_FAR);
 
     var el = document.createElement('div');
@@ -1036,7 +1020,7 @@
         void countdownEl.offsetHeight; /* Trigger reflow */
         countdownEl.style.animation = '';
       } else if (count === 0) {
-        countdownEl.textContent = '&#x1F3C8;';
+        countdownEl.textContent = '\uD83C\uDFC8';
         countdownEl.style.animation = 'none';
         void countdownEl.offsetHeight;
         countdownEl.style.animation = '';
@@ -1069,9 +1053,9 @@
 
     /* Set team badge */
     if (selectedTeam === 'seahawks') {
-      teamBadge.innerHTML = '&#x1F985; Seahawks';
+      teamBadge.textContent = '\uD83E\uDD85 Seahawks';
     } else {
-      teamBadge.innerHTML = '&#x1F1FA;&#x1F1F8; Patriots';
+      teamBadge.textContent = '\uD83C\uDFC8 Patriots';
     }
 
     spawnFootball();
@@ -1099,18 +1083,18 @@
 
     /* Rating */
     var rating;
-    if (finalScore >= 200) rating = '&#x1F3C6; LEGENDARY! MVP!';
-    else if (finalScore >= 150) rating = '&#x1F31F; All-Pro Performance!';
-    else if (finalScore >= 100) rating = '&#x1F525; Pro Bowl Material!';
-    else if (finalScore >= 60) rating = '&#x1F44D; Solid Starter!';
-    else if (finalScore >= 30) rating = '&#x1F3C3; Bench Warmer';
-    else rating = '&#x1F622; Cut from the team...';
+    if (finalScore >= 200) rating = '\uD83C\uDFC6 LEGENDARY! MVP!';
+    else if (finalScore >= 150) rating = '\uD83C\uDF1F All-Pro Performance!';
+    else if (finalScore >= 100) rating = '\uD83D\uDD25 Pro Bowl Material!';
+    else if (finalScore >= 60) rating = '\uD83D\uDC4D Solid Starter!';
+    else if (finalScore >= 30) rating = '\uD83C\uDFC3 Bench Warmer';
+    else rating = '\uD83D\uDE22 Cut from the team...';
 
     var detailsHtml = 'Throws: ' + totalFlings + ' &nbsp;|&nbsp; Scores: ' + totalHits + '<br>' +
       'Accuracy: ' + accuracy + '%<br>';
 
     if (penalty > 0) {
-      detailsHtml += '<div class="penalty-line">Patriots penalty: -' + penalty + ' points &#x1F611;</div>';
+      detailsHtml += '<div class="penalty-line">Patriots penalty: -' + penalty + ' points \uD83D\uDE11</div>';
     }
 
     detailsHtml += '<div class="final-score">' + finalScore + ' points</div>';
@@ -1119,9 +1103,9 @@
     resultDetails.innerHTML = detailsHtml;
 
     if (selectedTeam === 'seahawks') {
-      resultsTitle.innerHTML = '&#x1F985; Time\'s Up!';
+      resultsTitle.textContent = '\uD83E\uDD85 Time\'s Up!';
     } else {
-      resultsTitle.innerHTML = '&#x1F1FA;&#x1F1F8; Time\'s Up!';
+      resultsTitle.textContent = '\uD83C\uDFC8 Time\'s Up!';
     }
 
     setTimeout(function() {
@@ -1135,7 +1119,7 @@
     if (selectedTeam === 'seahawks') {
       emojis = ['&#x1F3C8;', '&#x1F985;', '&#x1F49A;', '&#x2B50;', '&#x1F389;', '&#x1F38A;', '&#x1F3C6;'];
     } else {
-      emojis = ['&#x1F3C8;', '&#x1F1FA;&#x1F1F8;', '&#x2764;&#xFE0F;', '&#x2B50;', '&#x1F389;', '&#x1F38A;', '&#x1F3C6;'];
+      emojis = ['&#x1F3C8;', '&#x2B50;', '&#x2764;&#xFE0F;', '&#x1F4A5;', '&#x1F389;', '&#x1F38A;', '&#x1F3C6;'];
     }
     for (var i = 0; i < 35; i++) {
       (function(idx) {
