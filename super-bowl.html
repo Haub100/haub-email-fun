@@ -829,13 +829,13 @@
       oldObs[i].remove();
     }
 
-    // Place player at bottom center
+    // Place player at bottom of field
     playerX = gameWidth / 2;
-    playerY = gameHeight * 0.85;
+    playerY = gameHeight * 0.9;
     targetX = playerX;
     playerEl.textContent = FOOTBALL_EMOJI;
-    playerEl.style.left = playerX + 'px';
-    playerEl.style.top = playerY + 'px';
+    playerEl.style.left = (playerX - 16) + 'px';
+    playerEl.style.top = (playerY - 16) + 'px';
     playerEl.style.display = 'block';
 
     updateHUD();
@@ -854,7 +854,7 @@
     var hint = document.createElement('div');
     hint.className = 'swipe-hint';
     var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    hint.textContent = isMobile ? 'Swipe left and right to dodge!' : 'Move mouse left and right to dodge!';
+    hint.textContent = isMobile ? 'Drag left and right to dodge defenders!' : 'Move mouse left and right to dodge defenders!';
     gameArea.appendChild(hint);
   }
 
@@ -948,9 +948,14 @@
       speedMult = HIT_SLOW_FACTOR;
     }
 
-    // Auto-scroll (player advances up field)
+    // Advance up field
     var scrollAmt = settings.scrollSpeed * speedMult * dt;
     yardsGained += scrollAmt * (FIELD_YARDS / gameHeight);
+
+    // Compute player Y position from yards gained (moves from bottom to endzone)
+    var endzoneBottom = gameHeight * 0.1;
+    var fieldStartY = gameHeight * 0.9;
+    playerY = fieldStartY - (fieldStartY - endzoneBottom) * (yardsGained / FIELD_YARDS);
 
     // Patriots fumble logic - spawn extra defenders near goal line to build tension
     if (selectedTeam === 'patriots' && yardsGained >= 85 && yardsGained < 95 && Math.random() < 0.03 * dt) {
@@ -1020,15 +1025,26 @@
     var x = Math.random() * (gameWidth * 0.85) + gameWidth * 0.075;
     var lateralSpeed = (Math.random() - 0.5) * 2 * settings.lateralVariance;
 
+    // Spawn defenders ahead of the player (between player and endzone)
+    // Place them a good distance above the player so there's reaction time
+    var aheadDist = gameHeight * 0.3 + Math.random() * gameHeight * 0.25;
+    var spawnY = playerY - aheadDist;
+    // Keep at least off the top edge so they don't pop in
+    if (spawnY < -40) spawnY = -40;
+
     el.style.left = x + 'px';
-    el.style.top = '-50px';
+    el.style.top = spawnY + 'px';
     gameArea.appendChild(el);
+
+    // Defenders move downfield toward the player (positive Y = downward)
+    // Some move faster, some slower, creating a gauntlet
+    var downSpeed = settings.obstacleSpeed * (0.4 + Math.random() * 0.6);
 
     obstacles.push({
       el: el,
       x: x,
-      y: -50,
-      speed: settings.obstacleSpeed * (0.8 + Math.random() * 0.4),
+      y: spawnY,
+      speed: downSpeed,
       lateralSpeed: lateralSpeed,
       dodged: false,
       jukeAwarded: false,
@@ -1086,15 +1102,15 @@
         }
       }
 
-      // Check for dodge (passed the player)
+      // Check for dodge (obstacle is now behind the player - player ran past it)
       if (!obs.dodged && obs.y > playerY + 30) {
         obs.dodged = true;
         dodges++;
         score += DODGE_POINTS;
       }
 
-      // Remove offscreen
-      if (obs.y > gameHeight + 60) {
+      // Remove if far behind the player or off the bottom of screen
+      if (obs.y > Math.max(gameHeight + 60, playerY + 200)) {
         obs.el.remove();
         obstacles.splice(i, 1);
       }
@@ -1174,17 +1190,19 @@
 
     var fumbleDelay = 500;
     var startY = playerY;
+    // Rush toward the endzone - get tantalizingly close
+    var targetY = gameHeight * 0.1;
     var fumbleStartTime = performance.now();
 
     function fumbleAnim(ts) {
       var elapsed = ts - fumbleStartTime;
       var progress = Math.min(elapsed / fumbleDelay, 1);
 
-      // Player moves forward toward endzone
-      playerY = startY - (startY * 0.08) * progress;
+      // Player sprints toward endzone
+      playerY = startY + (targetY - startY) * progress;
       playerEl.style.top = (playerY - 16) + 'px';
 
-      // Defender rushes in from the side
+      // Defender rushes in from the side to meet the player
       var defX = defStartX + (defTargetX - defStartX) * progress;
       defender.style.left = (defX - 16) + 'px';
       defender.style.top = (playerY - 16) + 'px';
@@ -1192,7 +1210,7 @@
       if (progress < 1) {
         requestAnimationFrame(fumbleAnim);
       } else {
-        // Impact - defender strips the ball
+        // Impact - defender strips the ball right at the goal line
         defender.remove();
         showFumble();
       }
@@ -1424,7 +1442,7 @@
     if (gameRunning) {
       gameWidth = gameArea.clientWidth;
       gameHeight = gameArea.clientHeight;
-      playerY = gameHeight * 0.85;
+      // playerY will be recomputed from yardsGained on next frame
       if (playerX > gameWidth - 20) playerX = gameWidth - 20;
     }
   });
