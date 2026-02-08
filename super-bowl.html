@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Super Bowl XLIX - The Big Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Arial Rounded MT Bold', sans-serif;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+    background: #1a1a2e;
+  }
+
+  /* ---- MENU SCREEN ---- */
+  #menu-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 40%, #2a2a5e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 12px;
+  }
+
+  #menu-screen h1 {
+    font-size: clamp(28px, 6vw, 52px);
+    color: #FFD700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 2px 2px 4px rgba(0,0,0,0.8);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  #menu-screen .subtitle {
+    font-size: clamp(14px, 3vw, 22px);
+    color: #ccc;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .menu-section {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .menu-section h2 {
+    font-size: clamp(16px, 3.5vw, 24px);
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .team-buttons, .diff-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 10px;
+  }
+
+  .team-btn {
+    padding: 12px 20px;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    font-size: clamp(14px, 3vw, 20px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 140px;
+    text-align: center;
+  }
+
+  .team-btn:active {
+    transform: scale(0.95);
+  }
+
+  .team-btn.seahawks {
+    background: #002244;
+    color: #69BE28;
+    border-color: #69BE28;
+  }
+
+  .team-btn.seahawks.selected {
+    background: #69BE28;
+    color: #002244;
+    box-shadow: 0 0 20px rgba(105, 190, 40, 0.6);
+  }
+
+  .team-btn.patriots {
+    background: #002244;
+    color: #C60C30;
+    border-color: #C60C30;
+  }
+
+  .team-btn.patriots.selected {
+    background: #C60C30;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(198, 12, 48, 0.6);
+  }
+
+  .diff-btn {
+    padding: 10px 18px;
+    border: 2px solid #888;
+    border-radius: 10px;
+    background: #222;
+    color: #fff;
+    font-size: clamp(13px, 2.8vw, 18px);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 90px;
+  }
+
+  .diff-btn:active {
+    transform: scale(0.95);
+  }
+
+  .diff-btn.selected {
+    border-color: #FFD700;
+    background: #444;
+    color: #FFD700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  }
+
+  #start-btn {
+    margin-top: 16px;
+    padding: 14px 40px;
+    font-size: clamp(16px, 3.5vw, 24px);
+    font-weight: bold;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.4;
+    pointer-events: none;
+    letter-spacing: 1px;
+  }
+
+  #start-btn.ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #start-btn.ready:active {
+    transform: scale(0.95);
+  }
+
+  /* ---- GAME SCREEN ---- */
+  #game-area {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: none;
+  }
+
+  /* Football field */
+  .field {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: #2d8a4e;
+  }
+
+  /* Yard lines */
+  .yard-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .yard-label {
+    position: absolute;
+    left: 6px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    font-weight: bold;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .yard-label-right {
+    position: absolute;
+    right: 6px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    font-weight: bold;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* End zones */
+  .endzone-top {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 8%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(16px, 4vw, 32px);
+    font-weight: bold;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .endzone-top.seahawks-ez {
+    background: #002244;
+    color: #69BE28;
+  }
+
+  .endzone-top.patriots-ez {
+    background: #002244;
+    color: #C60C30;
+  }
+
+  /* Sideline borders */
+  .sideline-left, .sideline-right {
+    position: absolute;
+    top: 0;
+    width: 3%;
+    min-width: 8px;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .sideline-left { left: 0; background: rgba(255,255,255,0.08); }
+  .sideline-right { right: 0; background: rgba(255,255,255,0.08); }
+
+  /* Player (running back) */
+  #player {
+    position: absolute;
+    font-size: clamp(30px, 7vw, 50px);
+    z-index: 10;
+    transition: none;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* Obstacles */
+  .obstacle {
+    position: absolute;
+    font-size: clamp(26px, 6vw, 44px);
+    z-index: 5;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* Football trail */
+  .trail-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(139, 90, 43, 0.4);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* HUD */
+  #hud {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+    pointer-events: none;
+    background: rgba(0,0,0,0.3);
+  }
+
+  #hud .hud-item {
+    color: #fff;
+    font-size: clamp(12px, 2.5vw, 18px);
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  }
+
+  /* Yard progress bar */
+  #yard-bar-container {
+    position: absolute;
+    right: 4px;
+    top: 8%;
+    bottom: 0;
+    width: 20px;
+    background: rgba(0,0,0,0.2);
+    z-index: 15;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  #yard-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(0deg, #FFD700, #FFA500);
+    border-radius: 4px;
+    transition: height 0.1s;
+  }
+
+  /* Countdown overlay */
+  #countdown {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background: rgba(0,0,0,0.5);
+  }
+
+  #countdown .count-text {
+    font-size: clamp(60px, 15vw, 120px);
+    color: #FFD700;
+    font-weight: bold;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+    animation: countPulse 0.5s ease-out;
+  }
+
+  @keyframes countPulse {
+    from { transform: scale(1.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* Fumble animation */
+  #fumble-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    background: rgba(0,0,0,0.7);
+  }
+
+  .fumble-text {
+    font-size: clamp(30px, 8vw, 60px);
+    color: #ff4444;
+    font-weight: bold;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    animation: fumbleShake 0.5s ease-in-out;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  @keyframes fumbleShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-15px); }
+    40% { transform: translateX(15px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(10px); }
+  }
+
+  /* Touchdown animation */
+  #td-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    background: rgba(0,0,0,0.6);
+  }
+
+  .td-text {
+    font-size: clamp(32px, 8vw, 64px);
+    color: #FFD700;
+    font-weight: bold;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+    animation: tdBounce 0.8s ease-out;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  @keyframes tdBounce {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* End screen */
+  #end-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 80;
+    background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 40%, #2a2a5e 100%);
+    gap: 10px;
+    padding: 20px;
+  }
+
+  #end-screen h1 {
+    font-size: clamp(24px, 6vw, 48px);
+    text-align: center;
+  }
+
+  #end-screen .result-text {
+    font-size: clamp(16px, 3.5vw, 26px);
+    color: #ccc;
+    text-align: center;
+    max-width: 500px;
+    line-height: 1.4;
+  }
+
+  .score-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px 28px;
+    margin: 8px 0;
+    text-align: center;
+    min-width: 240px;
+  }
+
+  .score-card .score-label {
+    font-size: clamp(12px, 2.5vw, 16px);
+    color: #aaa;
+    margin-bottom: 4px;
+  }
+
+  .score-card .score-value {
+    font-size: clamp(28px, 7vw, 48px);
+    color: #FFD700;
+    font-weight: bold;
+  }
+
+  .score-card .score-grade {
+    font-size: clamp(14px, 3vw, 20px);
+    color: #69BE28;
+    margin-top: 2px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 400px;
+    gap: 10px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-item .stat-num {
+    font-size: clamp(18px, 4vw, 30px);
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .stat-item .stat-label {
+    font-size: clamp(10px, 2vw, 14px);
+    color: #999;
+  }
+
+  #play-again-btn {
+    margin-top: 12px;
+    padding: 12px 36px;
+    font-size: clamp(14px, 3vw, 20px);
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  #play-again-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Confetti */
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    z-index: 70;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
+
+  /* Hit flash */
+  #hit-flash {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255, 0, 0, 0.3);
+    z-index: 30;
+    display: none;
+    pointer-events: none;
+  }
+
+  /* Swipe instruction */
+  .swipe-hint {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.6);
+    font-size: clamp(12px, 2.5vw, 16px);
+    text-align: center;
+    z-index: 12;
+    pointer-events: none;
+    animation: hintFade 3s ease-out forwards;
+  }
+
+  @keyframes hintFade {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Juke bonus text */
+  .juke-text {
+    position: absolute;
+    color: #FFD700;
+    font-size: clamp(14px, 3vw, 22px);
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    z-index: 25;
+    pointer-events: none;
+    animation: jukeFloat 1s ease-out forwards;
+  }
+
+  @keyframes jukeFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+  }
+
+  /* Roar overlay */
+  .crowd-roar {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: clamp(14px, 3vw, 22px);
+    font-weight: bold;
+    z-index: 25;
+    pointer-events: none;
+    animation: roarFade 1.5s ease-out forwards;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  @keyframes roarFade {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+    30% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    100% { opacity: 0; transform: translateX(-50%) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<!-- MENU SCREEN -->
+<div id="menu-screen">
+  <h1>SUPER BOWL XLIX</h1>
+  <div class="subtitle">Run it in for the game-winning touchdown!</div>
+
+  <div class="menu-section">
+    <h2>Choose Your Team</h2>
+    <div class="team-buttons">
+      <button class="team-btn seahawks" data-team="seahawks" onclick="selectTeam('seahawks')">Seahawks</button>
+      <button class="team-btn patriots" data-team="patriots" onclick="selectTeam('patriots')">Patriots</button>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <h2>Difficulty</h2>
+    <div class="diff-buttons">
+      <button class="diff-btn" data-diff="easy" onclick="selectDifficulty('easy')">Easy</button>
+      <button class="diff-btn" data-diff="medium" onclick="selectDifficulty('medium')">Medium</button>
+      <button class="diff-btn" data-diff="hard" onclick="selectDifficulty('hard')">Hard</button>
+    </div>
+  </div>
+
+  <button id="start-btn" onclick="startGame()">KICK OFF!</button>
+</div>
+
+<!-- GAME AREA -->
+<div id="game-area">
+  <div class="field"></div>
+  <div class="endzone-top" id="endzone">TOUCHDOWN</div>
+  <div class="sideline-left"></div>
+  <div class="sideline-right"></div>
+
+  <div id="hud">
+    <div class="hud-item" id="hud-team"></div>
+    <div class="hud-item" id="hud-score">Score: 0</div>
+    <div class="hud-item" id="hud-yards">100 yds</div>
+  </div>
+
+  <div id="yard-bar-container">
+    <div id="yard-bar"></div>
+  </div>
+
+  <div id="player"></div>
+  <div id="hit-flash"></div>
+  <div id="countdown"><div class="count-text" id="count-text"></div></div>
+  <div id="fumble-overlay"></div>
+  <div id="td-overlay"></div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen">
+  <h1 id="end-title"></h1>
+  <div class="result-text" id="end-result"></div>
+  <div class="score-card">
+    <div class="score-label">FINAL SCORE</div>
+    <div class="score-value" id="end-score">0</div>
+    <div class="score-grade" id="end-grade"></div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-item">
+      <div class="stat-num" id="stat-dodges">0</div>
+      <div class="stat-label">Dodges</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-jukes">0</div>
+      <div class="stat-label">Jukes</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-yards">0</div>
+      <div class="stat-label">Yards</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-hits">0</div>
+      <div class="stat-label">Hits Taken</div>
+    </div>
+  </div>
+  <button id="play-again-btn" onclick="resetToMenu()">PLAY AGAIN</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ---- CONSTANTS ----
+  var FIELD_YARDS = 100;
+  var PLAYER_SPEED_BASE = 2.8;
+  var SCROLL_SPEED_BASE = 1.4;
+  var HIT_SLOW_DURATION = 800;
+  var HIT_SLOW_FACTOR = 0.3;
+  var JUKE_CLOSE_DIST = 70;
+  var JUKE_POINTS = 50;
+  var DODGE_POINTS = 20;
+  var YARD_POINTS = 5;
+  var HIT_PENALTY = 30;
+  var FUMBLE_YARD_LINE = 1;
+  var OBSTACLE_EMOJIS = ['\uD83C\uDFC3', '\uD83D\uDCAA', '\uD83E\uDD3C'];
+  var FOOTBALL_EMOJI = '\uD83C\uDFC8';
+
+  // ---- DIFFICULTY SETTINGS ----
+  var DIFFICULTY = {
+    easy: {
+      obstacleInterval: 1400,
+      maxObstacles: 4,
+      obstacleSpeed: 1.6,
+      scrollSpeed: 1.2,
+      playerSpeed: 3.2,
+      lateralVariance: 0.3
+    },
+    medium: {
+      obstacleInterval: 1000,
+      maxObstacles: 6,
+      obstacleSpeed: 2.2,
+      scrollSpeed: 1.5,
+      playerSpeed: 2.8,
+      lateralVariance: 0.5
+    },
+    hard: {
+      obstacleInterval: 700,
+      maxObstacles: 9,
+      obstacleSpeed: 3.0,
+      scrollSpeed: 1.8,
+      playerSpeed: 2.5,
+      lateralVariance: 0.7
+    }
+  };
+
+  // ---- STATE ----
+  var selectedTeam = null;
+  var selectedDifficulty = null;
+  var gameRunning = false;
+  var animFrameId = null;
+  var playerX = 0;
+  var playerY = 0;
+  var targetX = 0;
+  var yardsGained = 0;
+  var fieldScrollOffset = 0;
+  var score = 0;
+  var dodges = 0;
+  var jukes = 0;
+  var hitsTaken = 0;
+  var obstacles = [];
+  var lastObstacleTime = 0;
+  var hitSlowUntil = 0;
+  var gameWidth = 0;
+  var gameHeight = 0;
+  var touchActive = false;
+  var touchX = 0;
+  var isFumbling = false;
+  var patriotsFumbleTriggered = false;
+  var trailDots = [];
+
+  // ---- DOM REFS ----
+  var menuScreen = document.getElementById('menu-screen');
+  var gameArea = document.getElementById('game-area');
+  var endScreen = document.getElementById('end-screen');
+  var playerEl = document.getElementById('player');
+  var hudTeam = document.getElementById('hud-team');
+  var hudScore = document.getElementById('hud-score');
+  var hudYards = document.getElementById('hud-yards');
+  var yardBar = document.getElementById('yard-bar');
+  var countdown = document.getElementById('countdown');
+  var countText = document.getElementById('count-text');
+  var fumbleOverlay = document.getElementById('fumble-overlay');
+  var tdOverlay = document.getElementById('td-overlay');
+  var hitFlash = document.getElementById('hit-flash');
+  var endzone = document.getElementById('endzone');
+  var startBtn = document.getElementById('start-btn');
+
+  // ---- MENU LOGIC ----
+  window.selectTeam = function(team) {
+    selectedTeam = team;
+    var btns = document.querySelectorAll('.team-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('selected', btns[i].dataset.team === team);
+    }
+    checkReady();
+  };
+
+  window.selectDifficulty = function(diff) {
+    selectedDifficulty = diff;
+    var btns = document.querySelectorAll('.diff-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('selected', btns[i].dataset.diff === diff);
+    }
+    checkReady();
+  };
+
+  function checkReady() {
+    if (selectedTeam && selectedDifficulty) {
+      startBtn.classList.add('ready');
+    } else {
+      startBtn.classList.remove('ready');
+    }
+  }
+
+  // ---- GAME START ----
+  window.startGame = function() {
+    if (!selectedTeam || !selectedDifficulty) return;
+
+    menuScreen.style.display = 'none';
+    gameArea.style.display = 'block';
+    endScreen.style.display = 'none';
+
+    gameWidth = gameArea.clientWidth;
+    gameHeight = gameArea.clientHeight;
+
+    // Setup endzone colors
+    if (selectedTeam === 'seahawks') {
+      endzone.classList.add('seahawks-ez');
+      endzone.classList.remove('patriots-ez');
+      endzone.textContent = 'TOUCHDOWN';
+    } else {
+      endzone.classList.add('patriots-ez');
+      endzone.classList.remove('seahawks-ez');
+      endzone.textContent = 'TOUCHDOWN';
+    }
+
+    // Setup HUD
+    var teamName = selectedTeam === 'seahawks' ? 'Seahawks' : 'Patriots';
+    hudTeam.textContent = teamName;
+
+    // Reset state
+    score = 0;
+    dodges = 0;
+    jukes = 0;
+    hitsTaken = 0;
+    yardsGained = 0;
+    fieldScrollOffset = 0;
+    hitSlowUntil = 0;
+    isFumbling = false;
+    patriotsFumbleTriggered = false;
+    obstacles = [];
+    trailDots = [];
+    lastObstacleTime = 0;
+
+    // Clear old obstacles
+    var oldObs = gameArea.querySelectorAll('.obstacle, .trail-dot, .juke-text, .crowd-roar, .swipe-hint, .confetti-piece, .yard-line, .yard-label, .yard-label-right');
+    for (var i = 0; i < oldObs.length; i++) {
+      oldObs[i].remove();
+    }
+
+    // Place player at bottom center
+    playerX = gameWidth / 2;
+    playerY = gameHeight * 0.85;
+    targetX = playerX;
+    playerEl.textContent = FOOTBALL_EMOJI;
+    playerEl.style.left = playerX + 'px';
+    playerEl.style.top = playerY + 'px';
+    playerEl.style.display = 'block';
+
+    updateHUD();
+    drawYardLines();
+    addSwipeHint();
+
+    // Countdown then go
+    doCountdown(function() {
+      gameRunning = true;
+      lastObstacleTime = performance.now();
+      animFrameId = requestAnimationFrame(gameLoop);
+    });
+  };
+
+  function addSwipeHint() {
+    var hint = document.createElement('div');
+    hint.className = 'swipe-hint';
+    var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    hint.textContent = isMobile ? 'Swipe left and right to dodge!' : 'Move mouse left and right to dodge!';
+    gameArea.appendChild(hint);
+  }
+
+  function drawYardLines() {
+    var endzoneH = gameHeight * 0.08;
+    var fieldH = gameHeight - endzoneH;
+    for (var yd = 10; yd <= 90; yd += 10) {
+      var pct = yd / 100;
+      var yPos = endzoneH + fieldH * (1 - pct);
+
+      var line = document.createElement('div');
+      line.className = 'yard-line';
+      line.style.top = yPos + 'px';
+      gameArea.appendChild(line);
+
+      var displayYd = yd <= 50 ? yd : 100 - yd;
+      var label = document.createElement('div');
+      label.className = 'yard-label';
+      label.style.top = yPos + 'px';
+      label.textContent = displayYd;
+      gameArea.appendChild(label);
+
+      var labelR = document.createElement('div');
+      labelR.className = 'yard-label-right';
+      labelR.style.top = yPos + 'px';
+      labelR.textContent = displayYd;
+      gameArea.appendChild(labelR);
+    }
+  }
+
+  function doCountdown(callback) {
+    countdown.style.display = 'flex';
+    var nums = ['3', '2', '1', 'GO!'];
+    var idx = 0;
+
+    function showNext() {
+      if (idx >= nums.length) {
+        countdown.style.display = 'none';
+        callback();
+        return;
+      }
+      countText.textContent = nums[idx];
+      countText.style.animation = 'none';
+      void countText.offsetHeight;
+      countText.style.animation = 'countPulse 0.5s ease-out';
+      idx++;
+      setTimeout(showNext, 700);
+    }
+    showNext();
+  }
+
+  // ---- INPUT HANDLING ----
+  document.addEventListener('mousemove', function(e) {
+    if (!gameRunning) return;
+    targetX = e.clientX;
+  });
+
+  gameArea.addEventListener('touchstart', function(e) {
+    if (!gameRunning) return;
+    touchActive = true;
+    touchX = e.touches[0].clientX;
+    targetX = touchX;
+    e.preventDefault();
+  }, { passive: false });
+
+  gameArea.addEventListener('touchmove', function(e) {
+    if (!gameRunning) return;
+    touchX = e.touches[0].clientX;
+    targetX = touchX;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    touchActive = false;
+  });
+
+  // ---- GAME LOOP ----
+  var lastTime = 0;
+  function gameLoop(timestamp) {
+    if (!gameRunning) return;
+
+    var dt = lastTime ? Math.min((timestamp - lastTime) / 16.667, 3) : 1;
+    lastTime = timestamp;
+
+    var settings = DIFFICULTY[selectedDifficulty];
+    var now = performance.now();
+
+    // Slow factor from hits
+    var speedMult = 1;
+    if (now < hitSlowUntil) {
+      speedMult = HIT_SLOW_FACTOR;
+    }
+
+    // Auto-scroll (player advances up field)
+    var scrollAmt = settings.scrollSpeed * speedMult * dt;
+    yardsGained += scrollAmt * (FIELD_YARDS / gameHeight);
+
+    // Patriots fumble logic - spawn extra defenders near goal line to build tension
+    if (selectedTeam === 'patriots' && yardsGained >= 85 && yardsGained < 95 && Math.random() < 0.03 * dt) {
+      spawnObstacle(settings);
+    }
+
+    // Patriots: trigger the fumble at the 1 yard line
+    if (selectedTeam === 'patriots' && yardsGained >= (FIELD_YARDS - FUMBLE_YARD_LINE) && !patriotsFumbleTriggered) {
+      patriotsFumbleTriggered = true;
+      triggerPatriotsFumble();
+      return;
+    }
+
+    // Seahawks touchdown
+    if (selectedTeam === 'seahawks' && yardsGained >= FIELD_YARDS) {
+      yardsGained = FIELD_YARDS;
+      triggerTouchdown();
+      return;
+    }
+
+    // Clamp yards
+    if (yardsGained > FIELD_YARDS) yardsGained = FIELD_YARDS;
+
+    // Move player horizontally toward target
+    var dx = targetX - playerX;
+    var moveSpeed = settings.playerSpeed * speedMult * dt;
+    if (Math.abs(dx) > moveSpeed) {
+      playerX += (dx > 0 ? moveSpeed : -moveSpeed) * 2.5;
+    } else {
+      playerX = targetX;
+    }
+
+    // Keep in bounds
+    var margin = gameWidth * 0.04;
+    if (playerX < margin) playerX = margin;
+    if (playerX > gameWidth - margin) playerX = gameWidth - margin;
+
+    playerEl.style.left = (playerX - 16) + 'px';
+    playerEl.style.top = (playerY - 16) + 'px';
+
+    // Score points for distance
+    score += scrollAmt * YARD_POINTS * 0.05;
+
+    // Spawn obstacles
+    if (now - lastObstacleTime > settings.obstacleInterval && obstacles.length < settings.maxObstacles) {
+      spawnObstacle(settings);
+      lastObstacleTime = now;
+    }
+
+    // Update obstacles
+    updateObstacles(dt, settings, now);
+
+    // Trail
+    if (Math.random() < 0.15) {
+      addTrailDot(playerX, playerY);
+    }
+
+    updateHUD();
+    animFrameId = requestAnimationFrame(gameLoop);
+  }
+
+  function spawnObstacle(settings) {
+    var el = document.createElement('div');
+    el.className = 'obstacle';
+    el.textContent = OBSTACLE_EMOJIS[Math.floor(Math.random() * OBSTACLE_EMOJIS.length)];
+
+    var x = Math.random() * (gameWidth * 0.85) + gameWidth * 0.075;
+    var lateralSpeed = (Math.random() - 0.5) * 2 * settings.lateralVariance;
+
+    el.style.left = x + 'px';
+    el.style.top = '-50px';
+    gameArea.appendChild(el);
+
+    obstacles.push({
+      el: el,
+      x: x,
+      y: -50,
+      speed: settings.obstacleSpeed * (0.8 + Math.random() * 0.4),
+      lateralSpeed: lateralSpeed,
+      dodged: false,
+      jukeAwarded: false,
+      width: 40,
+      height: 40
+    });
+  }
+
+  function updateObstacles(dt, settings, now) {
+    var playerSize = 32;
+    var hitDist = 28;
+
+    for (var i = obstacles.length - 1; i >= 0; i--) {
+      var obs = obstacles[i];
+      obs.y += obs.speed * dt;
+      obs.x += obs.lateralSpeed * dt;
+
+      // Bounce off walls
+      if (obs.x < 10 || obs.x > gameWidth - 10) {
+        obs.lateralSpeed *= -1;
+        obs.x = Math.max(10, Math.min(gameWidth - 10, obs.x));
+      }
+
+      obs.el.style.left = (obs.x - 16) + 'px';
+      obs.el.style.top = (obs.y - 16) + 'px';
+
+      // Check collision
+      var cdx = playerX - obs.x;
+      var cdy = playerY - obs.y;
+      var dist = Math.sqrt(cdx * cdx + cdy * cdy);
+
+      if (dist < hitDist && !isFumbling) {
+        // Hit!
+        hitsTaken++;
+        score = Math.max(0, score - HIT_PENALTY);
+        hitSlowUntil = now + HIT_SLOW_DURATION;
+        flashHit();
+
+        // Remove obstacle
+        obs.el.remove();
+        obstacles.splice(i, 1);
+        continue;
+      }
+
+      // Check for juke (close pass without hit)
+      if (!obs.jukeAwarded && dist < JUKE_CLOSE_DIST && dist > hitDist && obs.y > playerY - 20) {
+        obs.jukeAwarded = true;
+        jukes++;
+        score += JUKE_POINTS;
+        showJukeText(playerX, playerY - 30);
+
+        // Crowd roar on jukes
+        if (jukes % 3 === 0) {
+          showCrowdRoar();
+        }
+      }
+
+      // Check for dodge (passed the player)
+      if (!obs.dodged && obs.y > playerY + 30) {
+        obs.dodged = true;
+        dodges++;
+        score += DODGE_POINTS;
+      }
+
+      // Remove offscreen
+      if (obs.y > gameHeight + 60) {
+        obs.el.remove();
+        obstacles.splice(i, 1);
+      }
+    }
+  }
+
+  function flashHit() {
+    hitFlash.style.display = 'block';
+    setTimeout(function() {
+      hitFlash.style.display = 'none';
+    }, 150);
+  }
+
+  function showJukeText(x, y) {
+    var el = document.createElement('div');
+    el.className = 'juke-text';
+    var msgs = ['JUKE!', 'NASTY!', 'FILTHY!', 'ANKLE BREAKER!'];
+    el.textContent = msgs[Math.floor(Math.random() * msgs.length)] + ' +' + JUKE_POINTS;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    gameArea.appendChild(el);
+    setTimeout(function() { el.remove(); }, 1000);
+  }
+
+  function showCrowdRoar() {
+    var el = document.createElement('div');
+    el.className = 'crowd-roar';
+    var roars = ['THE CROWD GOES WILD!', 'LISTEN TO THAT CROWD!', 'WHAT A MOVE!', 'INCREDIBLE!'];
+    el.textContent = roars[Math.floor(Math.random() * roars.length)];
+    gameArea.appendChild(el);
+    setTimeout(function() { el.remove(); }, 1500);
+  }
+
+  function addTrailDot(x, y) {
+    var dot = document.createElement('div');
+    dot.className = 'trail-dot';
+    dot.style.left = (x - 3) + 'px';
+    dot.style.top = (y + 10) + 'px';
+    gameArea.appendChild(dot);
+    trailDots.push(dot);
+
+    if (trailDots.length > 30) {
+      var old = trailDots.shift();
+      old.remove();
+    }
+
+    setTimeout(function() {
+      dot.remove();
+      var idx = trailDots.indexOf(dot);
+      if (idx > -1) trailDots.splice(idx, 1);
+    }, 2000);
+  }
+
+  function updateHUD() {
+    var yardsLeft = Math.max(0, Math.round(FIELD_YARDS - yardsGained));
+    hudScore.textContent = 'Score: ' + Math.round(score);
+    hudYards.textContent = yardsLeft + ' yds';
+    yardBar.style.height = (yardsGained / FIELD_YARDS * 100) + '%';
+  }
+
+  // ---- PATRIOTS FUMBLE ----
+  function triggerPatriotsFumble() {
+    gameRunning = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    isFumbling = true;
+
+    // Spawn a defender that rushes in from the side to "strip" the ball
+    var defender = document.createElement('div');
+    defender.className = 'obstacle';
+    defender.textContent = OBSTACLE_EMOJIS[0];
+    var defStartX = playerX > gameWidth / 2 ? gameWidth + 30 : -30;
+    var defTargetX = playerX;
+    defender.style.left = defStartX + 'px';
+    defender.style.top = (playerY - 16) + 'px';
+    gameArea.appendChild(defender);
+
+    var fumbleDelay = 500;
+    var startY = playerY;
+    var fumbleStartTime = performance.now();
+
+    function fumbleAnim(ts) {
+      var elapsed = ts - fumbleStartTime;
+      var progress = Math.min(elapsed / fumbleDelay, 1);
+
+      // Player moves forward toward endzone
+      playerY = startY - (startY * 0.08) * progress;
+      playerEl.style.top = (playerY - 16) + 'px';
+
+      // Defender rushes in from the side
+      var defX = defStartX + (defTargetX - defStartX) * progress;
+      defender.style.left = (defX - 16) + 'px';
+      defender.style.top = (playerY - 16) + 'px';
+
+      if (progress < 1) {
+        requestAnimationFrame(fumbleAnim);
+      } else {
+        // Impact - defender strips the ball
+        defender.remove();
+        showFumble();
+      }
+    }
+    requestAnimationFrame(fumbleAnim);
+  }
+
+  function showFumble() {
+    fumbleOverlay.style.display = 'flex';
+    fumbleOverlay.innerHTML = '';
+
+    // Fumble the football - create a loose ball animation
+    var looseBall = document.createElement('div');
+    looseBall.style.cssText = 'font-size: clamp(30px, 7vw, 50px); position: absolute; z-index: 61; pointer-events: none;';
+    looseBall.textContent = FOOTBALL_EMOJI;
+    looseBall.style.left = playerX + 'px';
+    looseBall.style.top = playerY + 'px';
+    gameArea.appendChild(looseBall);
+
+    // Animate the ball bouncing away
+    var ballStartTime = performance.now();
+    var ballStartX = playerX;
+    var ballStartY = playerY;
+    var ballDirX = (Math.random() > 0.5 ? 1 : -1) * (100 + Math.random() * 80);
+    var ballDirY = -(50 + Math.random() * 60);
+
+    function animBall(ts) {
+      var elapsed = ts - ballStartTime;
+      var t = elapsed / 800;
+      if (t > 1) t = 1;
+
+      looseBall.style.left = (ballStartX + ballDirX * t) + 'px';
+      looseBall.style.top = (ballStartY + ballDirY * t + 200 * t * t) + 'px';
+      looseBall.style.transform = 'rotate(' + (t * 720) + 'deg)';
+
+      if (t < 1) {
+        requestAnimationFrame(animBall);
+      } else {
+        // Show the fumble text after ball bounces
+        setTimeout(function() {
+          looseBall.remove();
+          showFumbleResult();
+        }, 300);
+      }
+    }
+    requestAnimationFrame(animBall);
+
+    // Hide the player's football
+    playerEl.style.display = 'none';
+
+    // Red flash
+    flashHit();
+  }
+
+  function showFumbleResult() {
+    fumbleOverlay.innerHTML = '';
+
+    var title = document.createElement('div');
+    title.className = 'fumble-text';
+    title.textContent = 'FUMBLE!';
+    fumbleOverlay.appendChild(title);
+
+    var sub = document.createElement('div');
+    sub.style.cssText = 'color: #ffaaaa; font-size: clamp(14px, 3vw, 22px); margin-top: 12px; text-align: center; padding: 0 20px; animation: fumbleShake 0.5s ease-in-out;';
+    sub.textContent = 'The ball is loose at the 1 yard line!';
+    fumbleOverlay.appendChild(sub);
+
+    var sub2 = document.createElement('div');
+    sub2.style.cssText = 'color: #ff8888; font-size: clamp(12px, 2.5vw, 18px); margin-top: 8px; text-align: center; padding: 0 20px;';
+    sub2.textContent = 'Recovered by the defense!';
+    fumbleOverlay.appendChild(sub2);
+
+    setTimeout(function() {
+      showEndScreen(false);
+    }, 2800);
+  }
+
+  // ---- SEAHAWKS TOUCHDOWN ----
+  function triggerTouchdown() {
+    gameRunning = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    tdOverlay.style.display = 'flex';
+    tdOverlay.innerHTML = '';
+
+    var title = document.createElement('div');
+    title.className = 'td-text';
+    title.textContent = 'TOUCHDOWN!';
+    tdOverlay.appendChild(title);
+
+    var sub = document.createElement('div');
+    sub.style.cssText = 'color: #69BE28; font-size: clamp(16px, 3.5vw, 26px); margin-top: 10px; text-align: center; font-weight: bold; animation: tdBounce 0.8s ease-out;';
+    sub.textContent = 'SEAHAWKS WIN THE SUPER BOWL!';
+    tdOverlay.appendChild(sub);
+
+    // Confetti
+    spawnConfetti();
+
+    // Bonus for touchdown
+    score += 200;
+
+    setTimeout(function() {
+      showEndScreen(true);
+    }, 3000);
+  }
+
+  function spawnConfetti() {
+    var colors = ['#69BE28', '#002244', '#FFD700', '#fff', '#A5ACAF'];
+    for (var i = 0; i < 50; i++) {
+      (function(delay) {
+        setTimeout(function() {
+          var piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.left = Math.random() * gameWidth + 'px';
+          piece.style.top = '-10px';
+          piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.width = (4 + Math.random() * 8) + 'px';
+          piece.style.height = (4 + Math.random() * 8) + 'px';
+          piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+          piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+          gameArea.appendChild(piece);
+          setTimeout(function() { piece.remove(); }, 4000);
+        }, delay);
+      })(i * 40);
+    }
+  }
+
+  // ---- END SCREEN ----
+  function showEndScreen(won) {
+    fumbleOverlay.style.display = 'none';
+    tdOverlay.style.display = 'none';
+    gameArea.style.display = 'none';
+    endScreen.style.display = 'flex';
+
+    var endTitle = document.getElementById('end-title');
+    var endResult = document.getElementById('end-result');
+    var endScore = document.getElementById('end-score');
+    var endGrade = document.getElementById('end-grade');
+
+    var finalScore = Math.round(score);
+    var yardsDisplay = Math.round(yardsGained);
+
+    if (won) {
+      endTitle.textContent = 'CHAMPIONS!';
+      endTitle.style.color = '#69BE28';
+      endResult.textContent = 'The Seahawks run it in for the game-winning touchdown! You are Super Bowl champions!';
+    } else {
+      endTitle.textContent = 'HEARTBREAK';
+      endTitle.style.color = '#C60C30';
+      endResult.textContent = 'You fumbled at the 1 yard line! The defense recovered and the Patriots lose the Super Bowl. So close, yet so far...';
+    }
+
+    endScore.textContent = finalScore;
+    endGrade.textContent = getGrade(finalScore);
+
+    document.getElementById('stat-dodges').textContent = dodges;
+    document.getElementById('stat-jukes').textContent = jukes;
+    document.getElementById('stat-yards').textContent = yardsDisplay;
+    document.getElementById('stat-hits').textContent = hitsTaken;
+
+    // Confetti on win
+    if (won) {
+      spawnEndConfetti();
+    }
+  }
+
+  function getGrade(sc) {
+    if (sc >= 800) return 'Hall of Fame';
+    if (sc >= 600) return 'All-Pro';
+    if (sc >= 400) return 'Pro Bowl';
+    if (sc >= 250) return 'Starter';
+    if (sc >= 100) return 'Rookie';
+    return 'Benchwarmer';
+  }
+
+  function spawnEndConfetti() {
+    var colors = ['#69BE28', '#002244', '#FFD700', '#fff', '#A5ACAF'];
+    var w = window.innerWidth;
+    for (var i = 0; i < 40; i++) {
+      (function(delay) {
+        setTimeout(function() {
+          var piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.position = 'fixed';
+          piece.style.left = Math.random() * w + 'px';
+          piece.style.top = '-10px';
+          piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.width = (4 + Math.random() * 8) + 'px';
+          piece.style.height = (4 + Math.random() * 8) + 'px';
+          piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+          piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+          document.body.appendChild(piece);
+          setTimeout(function() { piece.remove(); }, 4000);
+        }, delay);
+      })(i * 50);
+    }
+  }
+
+  // ---- RESET ----
+  window.resetToMenu = function() {
+    gameRunning = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    lastTime = 0;
+
+    gameArea.style.display = 'none';
+    endScreen.style.display = 'none';
+    menuScreen.style.display = 'flex';
+
+    // Clear selections
+    selectedTeam = null;
+    selectedDifficulty = null;
+    var btns = document.querySelectorAll('.team-btn, .diff-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.remove('selected');
+    }
+    startBtn.classList.remove('ready');
+
+    // Clear game elements
+    var elems = gameArea.querySelectorAll('.obstacle, .trail-dot, .juke-text, .crowd-roar, .swipe-hint, .confetti-piece, .yard-line, .yard-label, .yard-label-right');
+    for (var j = 0; j < elems.length; j++) {
+      elems[j].remove();
+    }
+    obstacles = [];
+    trailDots = [];
+  };
+
+  // ---- HANDLE RESIZE ----
+  window.addEventListener('resize', function() {
+    if (gameRunning) {
+      gameWidth = gameArea.clientWidth;
+      gameHeight = gameArea.clientHeight;
+      playerY = gameHeight * 0.85;
+      if (playerX > gameWidth - 20) playerX = gameWidth - 20;
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
